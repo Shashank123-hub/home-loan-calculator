@@ -1,4 +1,4 @@
 # Home Loan Calculator
-This will calculate home load EMIs based on the data provided
+This will calculate home loan EMIs based on the data provided
 
-Here is the deployment link - https://home-loan-calculator-three.vercel.app/
+Deployment Link (on Vercel) - https://home-loan-calculator-three.vercel.app/
