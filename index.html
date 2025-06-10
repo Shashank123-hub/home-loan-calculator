@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home Loan Calculator</title>
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-Tm2Jz4l2+7VZU29e/ro/XyYREtFc4C2pjSEKsM8e62kAZ9D8ZSl+Ng6RswPJQIlg"
+    crossorigin="anonymous"
+  />
+  <style>
+    body {
+      background: #f8f9fa;
+    }
+    .calculator {
+      max-width: 480px;
+      margin: 3rem auto;
+      padding: 2rem;
+      background: #fff;
+      border-radius: 0.5rem;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h3 class="mb-4 text-center">Home Loan Calculator</h3>
+    <form id="loan-form">
+      <div class="mb-3">
+        <label for="price" class="form-label">Property Price (₹)</label>
+        <input type="number" class="form-control" id="price" placeholder="e.g. 50,00,000" required />
+      </div>
+      <div class="mb-3">
+        <label for="downPayment" class="form-label">Down Payment (₹)</label>
+        <input type="number" class="form-control" id="downPayment" placeholder="e.g. 5,00,000" required />
+      </div>
+      <div class="mb-3">
+        <label for="interestRate" class="form-label">Annual Interest Rate (%)</label>
+        <input type="number" step="0.01" class="form-control" id="interestRate" placeholder="e.g. 8.5" required />
+      </div>
+      <div class="mb-3">
+        <label for="tenure" class="form-label">Loan Tenure (Years)</label>
+        <input type="number" class="form-control" id="tenure" placeholder="e.g. 20" required />
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Calculate EMI</button>
+    </form>
+
+    <div id="results" class="mt-4" style="display:none;">
+      <h5>Results</h5>
+      <ul class="list-group">
+        <li class="list-group-item">Loan Amount: <span id="loanAmount"></span></li>
+        <li class="list-group-item">Monthly EMI: <span id="emi"></span></li>
+        <li class="list-group-item">Total Payment: <span id="totalPayment"></span></li>
+        <li class="list-group-item">Total Interest: <span id="totalInterest"></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle with Popper -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-eOpb7llcewbcVLS+n0nvd4Hpv1fOmBHN6YzG7c5tqPM7ow+/y+mYVxYIxZtmE+Hl"
+    crossorigin="anonymous"
+  ></script>
+  <script>
+    document.getElementById('loan-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Read inputs
+      const price = parseFloat(document.getElementById('price').value);
+      const down = parseFloat(document.getElementById('downPayment').value);
+      const rate = parseFloat(document.getElementById('interestRate').value) / 100 / 12;
+      const months = parseInt(document.getElementById('tenure').value) * 12;
+
+      // Principal after down payment
+      const principal = price - down;
+
+      // EMI calculation
+      const x = Math.pow(1 + rate, months);
+      const emi = (principal * rate * x) / (x - 1);
+
+      // Totals
+      const totalPayment = emi * months;
+      const totalInterest = totalPayment - principal;
+
+      // Display
+      document.getElementById('loanAmount').textContent = '₹' + principal.toLocaleString();
+      document.getElementById('emi').textContent = '₹' + emi.toFixed(2).toLocaleString();
+      document.getElementById('totalPayment').textContent = '₹' + totalPayment.toFixed(2).toLocaleString();
+      document.getElementById('totalInterest').textContent = '₹' + totalInterest.toFixed(2).toLocaleString();
+
+      document.getElementById('results').style.display = 'block';
+    });
+  </script>
+</body>
+</html>
