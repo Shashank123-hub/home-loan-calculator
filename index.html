@@ -1,98 +1,281 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Home Loan Calculator</title>
-  <!-- Bootstrap CSS -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-    integrity="sha384-Tm2Jz4l2+7VZU29e/ro/XyYREtFc4C2pjSEKsM8e62kAZ9D8ZSl+Ng6RswPJQIlg"
-    crossorigin="anonymous"
-  />
+  <title>Home Loan EMI Calculator</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
-    body {
-      background: #f8f9fa;
+    :root {
+      --primary: #4F46E5;
+      --bg-light: #f8f9fc;
+      --bg-dark: #1e1e1e;
+      --card-light: #ffffff;
+      --card-dark: #2c2c2c;
+      --text-light: #1f2937;
+      --text-dark: #f3f4f6;
+      --muted-light: #6b7280;
+      --muted-dark: #cbd5e1;
     }
-    .calculator {
-      max-width: 480px;
-      margin: 3rem auto;
-      padding: 2rem;
-      background: #fff;
+
+    [data-theme='light'] {
+      --bg: var(--bg-light);
+      --card: var(--card-light);
+      --text: var(--text-light);
+      --muted: var(--muted-light);
+    }
+
+    [data-theme='dark'] {
+      --bg: var(--bg-dark);
+      --card: var(--card-dark);
+      --text: var(--text-dark);
+      --muted: var(--muted-dark);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1140px;
+    }
+
+    .card {
+      border-radius: 1rem;
+      background-color: var(--card);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, #4F46E5, #6366F1);
+      border: none;
+      font-weight: 600;
       border-radius: 0.5rem;
-      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(to right, #4338CA, #6366F1);
+    }
+
+    .result-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .result-value {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .theme-switch {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+
+    .form-select,
+    .form-control {
+      background-color: var(--card);
+      color: var(--text);
+      border-color: #ccc;
+    }
+
+    canvas {
+      max-width: 100%;
+      height: auto !important;
+      max-height: 250px;
+    }
+
+    h1, h2, h3, h4, h5, h6,
+    .form-label,
+    .list-group-item,
+    .list-group-item strong {
+      color: var(--text);
+    }
+
+    @media (max-width: 768px) {
+      .result-value {
+        font-size: 1.2rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="calculator">
-    <h3 class="mb-4 text-center">Home Loan Calculator</h3>
-    <form id="loan-form">
-      <div class="mb-3">
-        <label for="price" class="form-label">Property Price (₹)</label>
-        <input type="number" class="form-control" id="price" placeholder="e.g. 50,00,000" required />
-      </div>
-      <div class="mb-3">
-        <label for="downPayment" class="form-label">Down Payment (₹)</label>
-        <input type="number" class="form-control" id="downPayment" placeholder="e.g. 5,00,000" required />
-      </div>
-      <div class="mb-3">
-        <label for="interestRate" class="form-label">Annual Interest Rate (%)</label>
-        <input type="number" step="0.01" class="form-control" id="interestRate" placeholder="e.g. 8.5" required />
-      </div>
-      <div class="mb-3">
-        <label for="tenure" class="form-label">Loan Tenure (Years)</label>
-        <input type="number" class="form-control" id="tenure" placeholder="e.g. 20" required />
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Calculate EMI</button>
-    </form>
 
-    <div id="results" class="mt-4" style="display:none;">
-      <h5>Results</h5>
-      <ul class="list-group">
-        <li class="list-group-item">Loan Amount: <span id="loanAmount"></span></li>
-        <li class="list-group-item">Monthly EMI: <span id="emi"></span></li>
-        <li class="list-group-item">Total Payment: <span id="totalPayment"></span></li>
-        <li class="list-group-item">Total Interest: <span id="totalInterest"></span></li>
-      </ul>
+<!-- Theme Toggle -->
+<div class="theme-switch">
+  <button class="btn btn-sm btn-outline-secondary" id="themeToggle">Dark Mode</button>
+</div>
+
+<div class="container">
+  <h2 class="mb-5 text-center">Home Loan EMI Calculator</h2>
+
+  <div class="row g-4">
+    <!-- Input Panel -->
+    <div class="col-lg-5">
+      <div class="card p-4">
+        <h5 class="mb-4">Loan Details</h5>
+        <form id="loan-form">
+          <div class="mb-3">
+            <label for="price" class="form-label">Property Price (₹)</label>
+            <select id="price" class="form-select">
+              <option value="3000000">30 Lakhs</option>
+              <option value="5000000" selected>50 Lakhs</option>
+              <option value="7500000">75 Lakhs</option>
+              <option value="10000000">1 Crore</option>
+              <option value="">Custom...</option>
+            </select>
+            <input type="number" class="form-control mt-2 d-none" id="priceCustom" placeholder="Enter custom amount" />
+          </div>
+          <div class="mb-3">
+            <label for="downPayment" class="form-label">Down Payment (₹)</label>
+            <select id="downPayment" class="form-select">
+              <option value="500000" selected>5 Lakhs</option>
+              <option value="1000000">10 Lakhs</option>
+              <option value="1500000">15 Lakhs</option>
+              <option value="">Custom...</option>
+            </select>
+            <input type="number" class="form-control mt-2 d-none" id="downPaymentCustom" placeholder="Enter custom amount" />
+          </div>
+          <div class="mb-3">
+            <label for="interestRate" class="form-label">Interest Rate (%)</label>
+            <input type="number" class="form-control" id="interestRate" placeholder="e.g. 8.5" value="8.5" />
+          </div>
+          <div class="mb-4">
+            <label for="tenure" class="form-label">Tenure (Years)</label>
+            <input type="number" class="form-control" id="tenure" value="20" />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Calculate</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Output Panel -->
+    <div class="col-lg-7">
+      <div class="card p-4">
+        <h5 class="mb-4">Results</h5>
+        <div id="results" style="display:none;">
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <div class="result-label">Loan Amount</div>
+              <div class="result-value" id="loanAmount"></div>
+            </div>
+            <div class="col-md-6">
+              <div class="result-label">Monthly EMI</div>
+              <div class="result-value" id="emi"></div>
+            </div>
+            <div class="col-md-6">
+              <div class="result-label">Total Payment</div>
+              <div class="result-value" id="totalPayment"></div>
+            </div>
+            <div class="col-md-6">
+              <div class="result-label">Total Interest</div>
+              <div class="result-value" id="totalInterest"></div>
+            </div>
+          </div>
+
+          <div class="border-top pt-4">
+            <h6>Breakdown Chart</h6>
+            <canvas id="loanChart"></canvas>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- Bootstrap Bundle with Popper -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-eOpb7llcewbcVLS+n0nvd4Hpv1fOmBHN6YzG7c5tqPM7ow+/y+mYVxYIxZtmE+Hl"
-    crossorigin="anonymous"
-  ></script>
-  <script>
-    document.getElementById('loan-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      // Read inputs
-      const price = parseFloat(document.getElementById('price').value);
-      const down = parseFloat(document.getElementById('downPayment').value);
-      const rate = parseFloat(document.getElementById('interestRate').value) / 100 / 12;
-      const months = parseInt(document.getElementById('tenure').value) * 12;
+<script>
+  let chart;
 
-      // Principal after down payment
-      const principal = price - down;
+  const formatCurrency = (num) => {
+    num = Math.round(num);
+    if (num >= 10000000) return `₹ ${(num / 10000000).toFixed(2)} Cr`;
+    if (num >= 100000) return `₹ ${(num / 100000).toFixed(2)} Lakh`;
+    if (num >= 1000) return `₹ ${(num / 1000).toFixed(2)} K`;
+    return `₹ ${num}`;
+  };
 
-      // EMI calculation
-      const x = Math.pow(1 + rate, months);
-      const emi = (principal * rate * x) / (x - 1);
+  // Theme toggle
+  const themeBtn = document.getElementById("themeToggle");
+  function setTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    themeBtn.textContent = theme === "dark" ? "Light Mode" : "Dark Mode";
+  }
+  themeBtn.addEventListener("click", () => {
+    const newTheme = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+    setTheme(newTheme);
+  });
+  setTheme("light"); // Always default to light mode
 
-      // Totals
-      const totalPayment = emi * months;
-      const totalInterest = totalPayment - principal;
+  // Show custom input if selected
+  document.getElementById('price').addEventListener('change', (e) => {
+    document.getElementById('priceCustom').classList.toggle('d-none', e.target.value !== "");
+  });
+  document.getElementById('downPayment').addEventListener('change', (e) => {
+    document.getElementById('downPaymentCustom').classList.toggle('d-none', e.target.value !== "");
+  });
 
-      // Display
-      document.getElementById('loanAmount').textContent = '₹' + principal.toLocaleString();
-      document.getElementById('emi').textContent = '₹' + emi.toFixed(2).toLocaleString();
-      document.getElementById('totalPayment').textContent = '₹' + totalPayment.toFixed(2).toLocaleString();
-      document.getElementById('totalInterest').textContent = '₹' + totalInterest.toFixed(2).toLocaleString();
+  document.getElementById('loan-form').addEventListener('submit', function(e) {
+    e.preventDefault();
 
-      document.getElementById('results').style.display = 'block';
+    let price = document.getElementById('price').value || document.getElementById('priceCustom').value;
+    let down = document.getElementById('downPayment').value || document.getElementById('downPaymentCustom').value;
+    const rate = parseFloat(document.getElementById('interestRate').value) / 100 / 12;
+    const months = parseInt(document.getElementById('tenure').value) * 12;
+
+    const principal = parseFloat(price) - parseFloat(down);
+    const x = Math.pow(1 + rate, months);
+    const emi = (principal * rate * x) / (x - 1);
+    const totalPayment = emi * months;
+    const totalInterest = totalPayment - principal;
+
+    document.getElementById('loanAmount').textContent = formatCurrency(principal);
+    document.getElementById('emi').textContent = formatCurrency(emi);
+    document.getElementById('totalPayment').textContent = formatCurrency(totalPayment);
+    document.getElementById('totalInterest').textContent = formatCurrency(totalInterest);
+    document.getElementById('results').style.display = 'block';
+
+    if (chart) chart.destroy();
+    chart = new Chart(document.getElementById('loanChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Principal', 'Interest'],
+        datasets: [{
+          data: [principal, totalInterest],
+          backgroundColor: ['#4F46E5', '#F87171'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '60%',
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: ${formatCurrency(context.raw)}`;
+              }
+            }
+          }
+        }
+      }
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
