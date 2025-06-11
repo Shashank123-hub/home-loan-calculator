@@ -1,15 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <link rel="icon" href="favicon.png" type="image/png" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Home Loan EMI Calculator</title>
-
-  <!-- Google Font -->
+  <link rel="icon" href="favicon.png" type="image/png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
-  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -31,6 +27,8 @@
       --card: var(--card-light);
       --text: var(--text-light);
       --muted: var(--muted-light);
+      --input-bg: #ffffff;
+      --input-text: #000000;
     }
 
     [data-theme='dark'] {
@@ -38,6 +36,8 @@
       --card: var(--card-dark);
       --text: var(--text-dark);
       --muted: var(--muted-dark);
+      --input-bg: #2c2c2c;
+      --input-text: #f3f4f6;
     }
 
     body {
@@ -56,7 +56,6 @@
       border-radius: 1rem;
       background-color: var(--card);
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      transition: all 0.3s ease;
     }
 
     .btn-primary {
@@ -81,6 +80,10 @@
       color: var(--text);
     }
 
+    .form-label {
+      color: var(--text);
+    }
+
     .theme-switch {
       position: absolute;
       top: 1rem;
@@ -89,8 +92,8 @@
 
     .form-select,
     .form-control {
-      background-color: var(--card);
-      color: var(--text);
+      background-color: var(--input-bg);
+      color: var(--input-text);
       border-color: #ccc;
     }
 
@@ -100,66 +103,55 @@
       max-height: 250px;
     }
 
-    h1, h2, h3, h4, h5, h6,
-    .form-label,
-    .list-group-item,
-    .list-group-item strong {
-      color: var(--text);
-    }
-
     @media (max-width: 768px) {
       .result-value {
         font-size: 1.2rem;
       }
     }
+
+    #amortization-table {
+      font-size: 0.9rem;
+    }
+
+    #amortization-table th, #amortization-table td {
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
 
-<!-- Theme Toggle -->
 <div class="theme-switch">
-  <button class="btn btn-sm btn-outline-secondary" id="themeToggle">Dark Mode</button>
+  <button class="btn btn-sm btn-outline-secondary" id="themeToggle">Toggle Theme</button>
 </div>
 
 <div class="container">
-  <h2 class="mb-5 text-center">Home Loan EMI Calculator</h2>
-
+  <h2 class="mb-4 text-center">Home Loan EMI Calculator</h2>
   <div class="row g-4">
     <!-- Input Panel -->
     <div class="col-lg-5">
       <div class="card p-4">
-        <h5 class="mb-4">Loan Details</h5>
         <form id="loan-form">
           <div class="mb-3">
             <label for="price" class="form-label">Property Price (₹)</label>
-            <select id="price" class="form-select">
-              <option value="3000000">30 Lakhs</option>
-              <option value="5000000" selected>50 Lakhs</option>
-              <option value="7500000">75 Lakhs</option>
-              <option value="10000000">1 Crore</option>
-              <option value="">Custom...</option>
-            </select>
-            <input type="number" class="form-control mt-2 d-none" id="priceCustom" placeholder="Enter custom amount" />
+            <input type="number" class="form-control" id="price" value="5000000" />
           </div>
           <div class="mb-3">
-            <label for="downPayment" class="form-label">Down Payment (₹)</label>
-            <select id="downPayment" class="form-select">
-              <option value="500000" selected>5 Lakhs</option>
-              <option value="1000000">10 Lakhs</option>
-              <option value="1500000">15 Lakhs</option>
-              <option value="">Custom...</option>
-            </select>
-            <input type="number" class="form-control mt-2 d-none" id="downPaymentCustom" placeholder="Enter custom amount" />
+            <label for="down" class="form-label">Down Payment (₹)</label>
+            <input type="number" class="form-control" id="down" value="1000000" />
           </div>
           <div class="mb-3">
-            <label for="interestRate" class="form-label">Interest Rate (%)</label>
-            <input type="number" class="form-control" id="interestRate" placeholder="e.g. 8.5" value="8.5" />
+            <label for="interest" class="form-label">Annual Interest Rate (%)</label>
+            <input type="number" class="form-control" id="interest" value="8.5" step="0.01" />
           </div>
-          <div class="mb-4">
-            <label for="tenure" class="form-label">Tenure (Years)</label>
+          <div class="mb-3">
+            <label for="tenure" class="form-label">Tenure (years)</label>
             <input type="number" class="form-control" id="tenure" value="20" />
           </div>
-          <button type="submit" class="btn btn-primary w-100">Calculate</button>
+          <div class="mb-3">
+            <label for="prepayment" class="form-label">One-time Prepayment (₹)</label>
+            <input type="number" class="form-control" id="prepayment" value="0" />
+          </div>
+          <button class="btn btn-primary w-100" type="submit">Calculate</button>
         </form>
       </div>
     </div>
@@ -167,16 +159,15 @@
     <!-- Output Panel -->
     <div class="col-lg-7">
       <div class="card p-4">
-        <h5 class="mb-4">Results</h5>
-        <div id="results" style="display:none;">
-          <div class="row g-3 mb-4">
+        <div id="output" style="display:none;">
+          <div class="row mb-4">
             <div class="col-md-6">
               <div class="result-label">Loan Amount</div>
               <div class="result-value" id="loanAmount"></div>
             </div>
             <div class="col-md-6">
               <div class="result-label">Monthly EMI</div>
-              <div class="result-value" id="emi"></div>
+              <div class="result-value" id="monthlyEmi"></div>
             </div>
             <div class="col-md-6">
               <div class="result-label">Total Payment</div>
@@ -187,10 +178,20 @@
               <div class="result-value" id="totalInterest"></div>
             </div>
           </div>
-
-          <div class="border-top pt-4">
-            <h6>Breakdown Chart</h6>
+          <div>
             <canvas id="loanChart"></canvas>
+          </div>
+          <div class="mt-4">
+            <h6>Amortization Schedule (First 12 Months)</h6>
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered" id="amortization-table">
+                <thead>
+                  <tr><th>Month</th><th>Principal</th><th>Interest</th><th>Balance</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <button class="btn btn-sm btn-outline-primary mt-2" id="downloadCsv">Download Full CSV</button>
           </div>
         </div>
       </div>
@@ -199,84 +200,76 @@
 </div>
 
 <script>
-  let chart;
+const format = n => `₹ ${n.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+let chart;
 
-  const formatCurrency = (num) => {
-    num = Math.round(num);
-    if (num >= 10000000) return `₹ ${(num / 10000000).toFixed(2)} Cr`;
-    if (num >= 100000) return `₹ ${(num / 100000).toFixed(2)} Lakh`;
-    if (num >= 1000) return `₹ ${(num / 1000).toFixed(2)} K`;
-    return `₹ ${num}`;
-  };
+document.getElementById("loan-form").addEventListener("submit", e => {
+  e.preventDefault();
 
-  // Theme toggle
-  const themeBtn = document.getElementById("themeToggle");
-  function setTheme(theme) {
-    document.documentElement.setAttribute("data-theme", theme);
-    themeBtn.textContent = theme === "dark" ? "Light Mode" : "Dark Mode";
+  const price = +document.getElementById("price").value;
+  const down = +document.getElementById("down").value;
+  const rate = +document.getElementById("interest").value / 100 / 12;
+  const months = +document.getElementById("tenure").value * 12;
+  const prepay = +document.getElementById("prepayment").value;
+
+  const loan = price - down - prepay;
+  const x = Math.pow(1 + rate, months);
+  const emi = (loan * rate * x) / (x - 1);
+  const totalPay = emi * months;
+  const totalInt = totalPay - loan;
+
+  document.getElementById("loanAmount").textContent = format(loan);
+  document.getElementById("monthlyEmi").textContent = format(emi);
+  document.getElementById("totalPayment").textContent = format(totalPay);
+  document.getElementById("totalInterest").textContent = format(totalInt);
+  document.getElementById("output").style.display = "block";
+
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById("loanChart"), {
+    type: 'doughnut',
+    data: {
+      labels: ['Principal', 'Interest'],
+      datasets: [{ data: [loan, totalInt], backgroundColor: ['#4F46E5', '#F87171'], borderWidth: 0 }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } }, cutout: '60%' }
+  });
+
+  let balance = loan, tableHTML = "", amortData = [];
+  for (let i = 1; i <= months && balance > 0; i++) {
+    const interestPayment = balance * rate;
+    const principalPayment = emi - interestPayment;
+    balance -= principalPayment;
+    amortData.push([i, principalPayment, interestPayment, Math.max(balance, 0)]);
   }
-  themeBtn.addEventListener("click", () => {
-    const newTheme = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
-    setTheme(newTheme);
-  });
-  setTheme("light"); // Always default to light mode
 
-  // Show custom input if selected
-  document.getElementById('price').addEventListener('change', (e) => {
-    document.getElementById('priceCustom').classList.toggle('d-none', e.target.value !== "");
-  });
-  document.getElementById('downPayment').addEventListener('change', (e) => {
-    document.getElementById('downPaymentCustom').classList.toggle('d-none', e.target.value !== "");
-  });
+  const tbody = document.querySelector("#amortization-table tbody");
+  tbody.innerHTML = amortData.slice(0, 12).map(r =>
+    `<tr><td>${r[0]}</td><td>${format(r[1])}</td><td>${format(r[2])}</td><td>${format(r[3])}</td></tr>`
+  ).join("");
 
-  document.getElementById('loan-form').addEventListener('submit', function(e) {
-    e.preventDefault();
+  document.getElementById("downloadCsv").onclick = () => {
+    const rows = [["Month", "Principal", "Interest", "Balance"], ...amortData.map(r =>
+      [r[0], Math.round(r[1]), Math.round(r[2]), Math.round(r[3])]
+    )];
+    const csv = rows.map(r => r.join(",")).join("\n");
+    const blob = new Blob([csv], {type: "text/csv"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "amortization_schedule.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+});
 
-    let price = document.getElementById('price').value || document.getElementById('priceCustom').value;
-    let down = document.getElementById('downPayment').value || document.getElementById('downPaymentCustom').value;
-    const rate = parseFloat(document.getElementById('interestRate').value) / 100 / 12;
-    const months = parseInt(document.getElementById('tenure').value) * 12;
+document.getElementById("themeToggle").onclick = () => {
+  const theme = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
+};
 
-    const principal = parseFloat(price) - parseFloat(down);
-    const x = Math.pow(1 + rate, months);
-    const emi = (principal * rate * x) / (x - 1);
-    const totalPayment = emi * months;
-    const totalInterest = totalPayment - principal;
-
-    document.getElementById('loanAmount').textContent = formatCurrency(principal);
-    document.getElementById('emi').textContent = formatCurrency(emi);
-    document.getElementById('totalPayment').textContent = formatCurrency(totalPayment);
-    document.getElementById('totalInterest').textContent = formatCurrency(totalInterest);
-    document.getElementById('results').style.display = 'block';
-
-    if (chart) chart.destroy();
-    chart = new Chart(document.getElementById('loanChart'), {
-      type: 'doughnut',
-      data: {
-        labels: ['Principal', 'Interest'],
-        datasets: [{
-          data: [principal, totalInterest],
-          backgroundColor: ['#4F46E5', '#F87171'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        cutout: '60%',
-        plugins: {
-          legend: { position: 'bottom' },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return `${context.label}: ${formatCurrency(context.raw)}`;
-              }
-            }
-          }
-        }
-      }
-    });
-  });
+window.onload = () => {
+  const saved = localStorage.getItem("theme") || "light";
+  document.documentElement.setAttribute("data-theme", saved);
+};
 </script>
-
 </body>
 </html>
